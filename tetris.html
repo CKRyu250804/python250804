@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Tetris</title>
+    <style>
+        body { background: #222; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { background: #111; display: block; margin: auto; border: 2px solid #444; }
+        #score { color: #fff; text-align: center; font-size: 1.5em; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div>
+        <div id="score">Score: 0</div>
+        <canvas id="tetris" width="300" height="600"></canvas>
+    </div>
+    <script>
+        const canvas = document.getElementById('tetris');
+        const ctx = canvas.getContext('2d');
+        const scoreElem = document.getElementById('score');
+
+        const COLS = 10, ROWS = 20, BLOCK = 30;
+        const COLORS = [
+            '#111', '#0ff', '#00f', '#fa0', '#ff0', '#0f0', '#f00', '#808'
+        ];
+        const SHAPES = [
+            [[1, 1, 1, 1]], // I
+            [[2, 0, 0], [2, 2, 2]], // J
+            [[0, 0, 3], [3, 3, 3]], // L
+            [[4, 4], [4, 4]], // O
+            [[0, 5, 5], [5, 5, 0]], // S
+            [[6, 6, 0], [0, 6, 6]], // Z
+            [[0, 7, 0], [7, 7, 7]], // T
+        ];
+
+        function createMatrix(rows, cols) {
+            return Array.from({length: rows}, () => Array(cols).fill(0));
+        }
+
+        function drawBlock(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+            ctx.strokeStyle = '#222';
+            ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw board
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    drawBlock(x, y, COLORS[board[y][x]]);
+                }
+            }
+            // Draw current piece
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        drawBlock(piece.x + x, piece.y + y, COLORS[piece.shape[y][x]]);
+                    }
+                }
+            }
+        }
+
+        function collide(board, piece, dx = 0, dy = 0, rotated = null) {
+            const shape = rotated || piece.shape;
+            for (let y = 0; y < shape.length; y++) {
+                for (let x = 0; x < shape[y].length; x++) {
+                    if (shape[y][x]) {
+                        let nx = piece.x + x + dx;
+                        let ny = piece.y + y + dy;
+                        if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+                        if (ny >= 0 && board[ny][nx]) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function merge(board, piece) {
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        board[piece.y + y][piece.x + x] = piece.shape[y][x];
+                    }
+                }
+            }
+        }
+
+        function clearLines(board) {
+            let lines = 0;
+            for (let y = board.length - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                    lines++;
+                    y++;
+                }
+            }
+            return lines;
+        }
+
+        function newPiece() {
+            const type = Math.floor(Math.random() * SHAPES.length);
+            const shape = SHAPES[type].map(row => row.slice());
+            return {
+                shape,
+                x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+                y: 0
+            };
+        }
+
+        function rotate(shape) {
+            return shape[0].map((_, i) => shape.map(row => row[i])).reverse();
+        }
+
+        let board = createMatrix(ROWS, COLS);
+        let piece = newPiece();
+        let score = 0;
+        let dropCounter = 0;
+        let dropInterval = 500;
+        let lastTime = 0;
+        let gameOver = false;
+
+        function update(time = 0) {
+            if (gameOver) return;
+            const delta = time - lastTime;
+            lastTime = time;
+            dropCounter += delta;
+            if (dropCounter > dropInterval) {
+                dropCounter = 0;
+                if (!collide(board, piece, 0, 1)) {
+                    piece.y++;
+                } else {
+                    merge(board, piece);
+                    const lines = clearLines(board);
+                    score += lines * 100;
+                    scoreElem.textContent = 'Score: ' + score;
+                    piece = newPiece();
+                    if (collide(board, piece)) {
+                        gameOver = true;
+                        scoreElem.textContent += ' - Game Over!';
+                    }
+                }
+            }
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener('keydown', e => {
+            if (gameOver) return;
+            if (e.key === 'ArrowLeft') {
+                if (!collide(board, piece, -1, 0)) piece.x--;
+            } else if (e.key === 'ArrowRight') {
+                if (!collide(board, piece, 1, 0)) piece.x++;
+            } else if (e.key === 'ArrowDown') {
+                if (!collide(board, piece, 0, 1)) piece.y++;
+            } else if (e.key === 'ArrowUp') {
+                const rotated = rotate(piece.shape);
+                if (!collide(board, piece, 0, 0, rotated)) piece.shape = rotated;
+            }
+            draw();
+        });
+
+        // 게임 시작을 웹페이지 로딩 시 자동으로 실행
+        window.addEventListener('DOMContentLoaded', () => {
+            draw();
+            requestAnimationFrame(update);
+        });
+    </script>
+</body>
+</html>
