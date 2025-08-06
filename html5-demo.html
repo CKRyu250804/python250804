@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML5 데모 페이지</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f6fa;
+            margin: 0;
+            padding: 0;
+        }
+        header, footer {
+            background: #273c75;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav {
+            background: #40739e;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        nav a {
+            color: #fff;
+            margin: 0 1rem;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        section {
+            margin-bottom: 2rem;
+        }
+        button {
+            background: #44bd32;
+            color: #fff;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #0097e6;
+        }
+        .highlight {
+            color: #e84118;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>HTML5 &amp; CSS3 데모 페이지</h1>
+        <p>HTML5 태그와 CSS3, 자바스크립트 예제</p>
+    </header>
+    <nav>
+        <a href="#intro">소개</a>
+        <a href="#features">특징</a>
+        <a href="#event">이벤트</a>
+    </nav>
+    <main>
+        <section id="intro">
+            <h2>소개</h2>
+            <p>
+                이 페이지는 <span class="highlight">HTML5</span>의 다양한 태그와 <span class="highlight">CSS3</span> 스타일, 그리고 간단한 <span class="highlight">자바스크립트</span>를 활용한 데모입니다.
+            </p>
+        </section>
+        <section id="features">
+            <h2>HTML5 주요 태그</h2>
+            <ul>
+                <li><strong>&lt;header&gt;</strong>, <strong>&lt;nav&gt;</strong>, <strong>&lt;main&gt;</strong>, <strong>&lt;section&gt;</strong>, <strong>&lt;footer&gt;</strong></li>
+                <li><strong>&lt;article&gt;</strong>, <strong>&lt;aside&gt;</strong></li>
+                <li><strong>&lt;audio&gt;</strong>, <strong>&lt;video&gt;</strong></li>
+                <li><strong>&lt;form&gt;</strong> 및 다양한 입력 타입</li>
+            </ul>
+        </section>
+        <section id="event">
+            <h2>자바스크립트 이벤트</h2>
+            <p>아래 버튼을 클릭해보세요!</p>
+            <button id="demoBtn">클릭!</button>
+            <p id="result"></p>
+        </section>
+    </main>
+    <footer>
+        &copy; 2025 HTML5 Demo. All rights reserved.
+    </footer>
+    <script>
+        document.getElementById('demoBtn').addEventListener('click', function() {
+            const result = document.getElementById('result');
+            const now = new Date();
+            result.textContent = `버튼이 클릭되었습니다! 현재 시각: ${now.toLocaleTimeString()}`;
+        });
+    </script>
+</body>
+</html>

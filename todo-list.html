@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-pink-100 via-blue-100 to-green-100 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-auto bg-white/80 rounded-2xl shadow-xl p-6 sm:p-8 backdrop-blur-md">
+        <h1 class="text-3xl font-bold text-center text-pink-400 mb-6 tracking-wide drop-shadow">To-Do List</h1>
+        <form id="todo-form" class="flex gap-2 mb-6">
+            <input 
+                id="todo-input"
+                type="text" 
+                placeholder="할 일을 입력하세요" 
+                class="flex-1 px-4 py-2 rounded-lg border border-blue-200 bg-blue-50/60 placeholder:text-blue-300 focus:outline-none focus:ring-2 focus:ring-pink-200 transition"
+                autocomplete="off"
+            >
+            <button 
+                type="submit"
+                class="bg-pink-300 hover:bg-pink-400 text-white font-semibold px-5 py-2 rounded-lg shadow transition"
+            >추가</button>
+        </form>
+        <ul id="todo-list" class="space-y-3">
+            <!-- 동적으로 할 일 항목이 추가됩니다 -->
+        </ul>
+        <p class="text-xs text-center text-gray-400 mt-8">파스텔톤 반응형 & 기능 구현 완료</p>
+    </div>
+    <script>
+        // 로컬스토리지에서 할 일 목록 불러오기
+        function getTodos() {
+            return JSON.parse(localStorage.getItem('todos') || '[]');
+        }
+        // 로컬스토리지에 할 일 목록 저장
+        function saveTodos(todos) {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+        // 할 일 목록 렌더링
+        function renderTodos() {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = '';
+            const todos = getTodos();
+            if (todos.length === 0) {
+                list.innerHTML = `<li class="text-center text-blue-300 py-6">할 일이 없습니다.</li>`;
+                return;
+            }
+            todos.forEach((todo, idx) => {
+                const li = document.createElement('li');
+                li.className = `flex items-center justify-between rounded-lg px-4 py-3 shadow-sm transition
+                    ${idx % 2 === 0 ? 'bg-pink-100/70' : 'bg-green-100/70'}`;
+                li.innerHTML = `
+                    <span class="font-medium break-all ${todo.done ? 'line-through text-gray-400' : (idx % 2 === 0 ? 'text-blue-500' : 'text-pink-500')}">${todo.text}</span>
+                    <div class="flex gap-2">
+                        <button class="toggle-btn bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold px-3 py-1 rounded-md transition text-xs" data-idx="${idx}">
+                            ${todo.done ? '취소' : '완료'}
+                        </button>
+                        <button class="delete-btn bg-pink-200 hover:bg-pink-300 text-pink-700 font-semibold px-3 py-1 rounded-md transition text-xs" data-idx="${idx}">
+                            삭제
+                        </button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+        // 할 일 추가
+        document.getElementById('todo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('todo-input');
+            const text = input.value.trim();
+            if (!text) {
+                input.focus();
+                return;
+            }
+            const todos = getTodos();
+            todos.push({ text, done: false });
+            saveTodos(todos);
+            input.value = '';
+            renderTodos();
+        });
+        // 할 일 완료/삭제 이벤트 위임
+        document.getElementById('todo-list').addEventListener('click', function(e) {
+            const idx = e.target.dataset.idx;
+            if (e.target.classList.contains('delete-btn')) {
+                const todos = getTodos();
+                todos.splice(idx, 1);
+                saveTodos(todos);
+                renderTodos();
+            }
+            if (e.target.classList.contains('toggle-btn')) {
+                const todos = getTodos();
+                todos[idx].done = !todos[idx].done;
+                saveTodos(todos);
+                renderTodos();
+            }
+        });
+        // 반응형: 모바일에서 입력창/버튼 크기 조정
+        function setResponsive() {
+            const input = document.getElementById('todo-input');
+            if (window.innerWidth < 500) {
+                input.classList.add('text-sm', 'py-2');
+            } else {
+                input.classList.remove('text-sm', 'py-2');
+            }
+        }
+        window.addEventListener('resize', setResponsive);
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTodos();
+            setResponsive();
+        });
+    </script>
+</body>
+</html>
